@@ -24,11 +24,17 @@ export const TicketSchema = new Schema(
 				price: Number,
 			},
 		],
+		color: String,
 		total_price: Number,
 		exception: String,
 		time: String,
 		type_payment: String,
 		status: {
+			type: String,
+			enum: ['completed', 'process'],
+			required: true,
+		},
+		status_delivery: {
 			type: String,
 			enum: ['completed', 'process'],
 			required: true,

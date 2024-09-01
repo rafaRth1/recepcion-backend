@@ -6,12 +6,19 @@ const getTickets = async (req = Request, res = Response) => {
 };
 
 const getTicketsUser = async (req = Request, res = Response) => {
-	const tickets = await Ticket.find({ user: req.params.id }).select('-createdAt -updatedAt -__v');
+	const { id } = req.params;
+	const tickets = await Ticket.find({ user: id }).select('-createdAt -updatedAt -__v');
+
+	res.json(tickets);
+};
+
+const getTicketsDelivery = async (req = Request, res = Response) => {
+	const tickets = await Ticket.find({ status_delivery: 'process' }).select('-createdAt -updatedAt -__v');
 	res.json(tickets);
 };
 
 const addTicket = async (req, res) => {
-	console.log(req.body);
+	console.log(req.params);
 
 	// try {
 	// 	const tickets = await Ticket.insertMany(req.body);
@@ -24,9 +31,13 @@ const addTicket = async (req, res) => {
 
 const editTicket = async (req = Request, res = Response) => {
 	const { id } = req.params;
+	console.log(req.body);
+
 	const ticket = await Ticket.findById(id);
 
-	ticket.status = 'completed';
+	ticket.status = req.body.status || ticket.status;
+	ticket.status_delivery = req.body.status_delivery || ticket.status_delivery;
+	ticket.color = req.body.color || ticket.color;
 
 	try {
 		await ticket.save();
@@ -45,4 +56,4 @@ const deleteTicket = async (req = Request, res = Response) => {
 	res.json({ msg: 'Ticket eliminado' });
 };
 
-export { addTicket, getTickets, getTicketsUser, editTicket, deleteTicket };
+export { addTicket, getTickets, getTicketsUser, editTicket, deleteTicket, getTicketsDelivery };

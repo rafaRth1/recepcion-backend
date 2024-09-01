@@ -54,9 +54,10 @@ const onConnection = async (socket) => {
 		try {
 			const tickets = await Ticket.insertMany(data);
 			socket.broadcast.emit('responseFinishTicket', tickets);
+			socket.emit('responseFinishTicket', tickets);
 		} catch (error) {
 			const errorMsg = new Error('Hubo un error en los datos');
-			res.status(409).json({ msg: errorMsg.message });
+			console.log(errorMsg);
 		}
 	});
 };
