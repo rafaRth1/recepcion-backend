@@ -13,7 +13,7 @@ const getTicketsUser = async (req = Request, res = Response) => {
 };
 
 const getTicketsDelivery = async (req = Request, res = Response) => {
-	const tickets = await Ticket.find({ status_delivery: 'process' }).select('-createdAt -updatedAt -__v');
+	const tickets = await Ticket.find({ status_delivery: 'process', type: 'delivery' }).select('-createdAt -updatedAt -__v');
 	res.json(tickets);
 };
 
