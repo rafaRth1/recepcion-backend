@@ -1,7 +1,7 @@
 import Ticket from '../models/Ticket.js';
 
 const getTickets = async (req = Request, res = Response) => {
-	const tickets = await Ticket.find().select('-createdAt -updatedAt -__v');
+	const tickets = await Ticket.find({ status: 'process' }).select('-createdAt -updatedAt -__v');
 	res.json(tickets);
 };
 
@@ -19,7 +19,6 @@ const getTicketsDelivery = async (req = Request, res = Response) => {
 
 const addTicket = async (req, res) => {
 	console.log(req.params);
-
 	// try {
 	// 	const tickets = await Ticket.insertMany(req.body);
 	// 	res.json(tickets);
