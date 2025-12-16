@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "rootDir": "./server",
+    "outDir": "./dist",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "target": "ESNext",
+    "types": ["node"],
+    "lib": ["ESNext"],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "baseUrl": "./server",
+    "paths": {
+      "@/*": ["/*"],
+    }
+  },
+  "include": ["server/**/*"],
+  "exclude": ["node_modules", "dist"]
+}
