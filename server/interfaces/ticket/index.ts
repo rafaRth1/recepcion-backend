@@ -12,6 +12,7 @@ export interface Ticket {
 	paymentType?: PaymentType;
 	status: TicketStatus;
 	deliveryStatus: DeliveryStatus;
+	momentaryTime: string;
 	type: TicketType;
 	user: Types.ObjectId;
 }

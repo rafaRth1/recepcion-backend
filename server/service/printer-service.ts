@@ -39,9 +39,9 @@ export class PrinterService {
 				// ---------------------------
 				data += ESC + 'a' + '\x00'; // Alinear izquierda
 
-				data += `Cliente: ${ticket.name_ticket}\n`;
-				data += `Fecha: ${ticket.time}\n`;
-				data += `Pago: ${ticket.type_payment || '----'}\n`;
+				data += `Cliente: ${ticket.nameTicket}\n`;
+				data += `Fecha: ${ticket.momentaryTime}\n`;
+				data += `Pago: ${ticket.paymentType || '----'}\n`;
 
 				data += '==========================================\n';
 
@@ -56,7 +56,7 @@ export class PrinterService {
 				data += '------------------------------------------\n';
 
 				ticket.dishes.forEach((dish) => {
-					const name = dish.dish_food.slice(0, 20);
+					const name = dish.dishFood.slice(0, 20);
 					data += this.pad(name, 20);
 					data += this.pad(dish.rice ? 'Si' : 'No', 5);
 					data += this.pad(dish.salad ? 'Si' : 'No', 5);
@@ -112,7 +112,7 @@ export class PrinterService {
 				data += '==========================================\n';
 				data += ESC + 'a' + '\x02'; // Alinear derecha
 				data += ESC + '!' + '\x10'; // Texto grande
-				data += `TOTAL: S/${ticket.total_price.toFixed(2)}\n`;
+				data += `TOTAL: S/${ticket.totalPrice.toFixed(2)}\n`;
 				data += ESC + '!' + '\x00';
 
 				// ---------------------------

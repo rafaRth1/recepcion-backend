@@ -29,6 +29,10 @@ const TicketSchema = new Schema<TicketDocument>(
 		color: String,
 		totalPrice: Number,
 		exception: String,
+		momentaryTime: {
+			type: String,
+			required: false,
+		},
 		paymentType: {
 			type: String,
 			enum: Object.values(PaymentType),
