@@ -23,3 +23,21 @@ export const printTicketController = async (req: Request, res: Response) => {
 		});
 	}
 };
+
+export const printCustomerReceiptController = async (req: Request, res: Response) => {
+	try {
+		const receipt = req.body;
+
+		await printerService.printCustomerReceipt(receipt);
+
+		res.json({
+			ok: true,
+			message: 'Boleta enviada a la impresora correctamente',
+		});
+	} catch (error: any) {
+		res.status(500).json({
+			ok: false,
+			error: error.message || 'Error al imprimir boleta',
+		});
+	}
+};

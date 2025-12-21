@@ -1,3 +1,4 @@
+import { CustomerReceipt } from 'interfaces/printer';
 import { Ticket } from './../interfaces/ticket/index';
 import net from 'net';
 
@@ -119,6 +120,112 @@ export class PrinterService {
 				//      ESPACIO Y CORTE
 				// ---------------------------
 				data += '\n\n\n\n\n\n';
+				data += GS + 'V' + '\x00'; // Cortar papel
+
+				client.write(Buffer.from(data, 'binary'));
+				client.end();
+				resolve();
+			});
+
+			client.on('error', (err) => {
+				reject(new Error('Error conectando a la impresora: ' + err.message));
+			});
+
+			client.on('timeout', () => {
+				client.destroy();
+				reject(new Error('Timeout al conectar a la impresora'));
+			});
+		});
+	}
+
+	async printCustomerReceipt(receipt: CustomerReceipt): Promise<void> {
+		return new Promise((resolve, reject) => {
+			const client = new net.Socket();
+			client.setTimeout(5000);
+
+			client.connect(this.printerPort, this.printerIp, () => {
+				const ESC = '\x1B';
+				const GS = '\x1D';
+
+				let data = '';
+
+				// Inicialización
+				data += ESC + '@';
+
+				// ---------------------------
+				//      ENCABEZADO
+				// ---------------------------
+				data += ESC + 'a' + '\x01'; // Centrar
+				data += ESC + '!' + '\x18'; // Texto grande y negrita
+				data += 'EZECHIS BURGER\n';
+				data += ESC + '!' + '\x00';
+				data += '\n';
+
+				// Datos del negocio alineados a la izquierda
+				data += ESC + 'a' + '\x00';
+				data += 'RUC: 10482622670\n';
+				data += 'Tel: 924 373 692\n';
+				data += 'Sol de Villa Lt 34, Carabayllo 15318\n';
+				data += '\n';
+				data += `Fecha: ${receipt.date}\n`;
+
+				if (receipt.customerName) {
+					data += `Cliente: ${receipt.customerName}\n`;
+				}
+
+				data += `Mesa: ${receipt.table}\n`;
+				data += `Empleado: ${receipt.employee}\n`;
+
+				data += '----------------------------------------------\n';
+
+				// ---------------------------
+				//      TABLA DE ITEMS
+				// ---------------------------
+				// Encabezado de la tabla
+				data += this.pad('#', 3) + this.pad('ITEM', 28) + 'IMPORTE\n';
+				data += '----------------------------------------------\n';
+
+				// Items
+				receipt.items.forEach((item, index) => {
+					const numero = (index + 1).toString();
+					const nombre = item.description.slice(0, 28);
+					const importe = item.total.toFixed(2);
+
+					data += this.pad(numero, 3);
+					data += this.pad(nombre, 28);
+					data += `${importe}\n`;
+
+					// Si hay más de 1 unidad, mostrar detalle
+					if (item.quantity > 1) {
+						data += this.pad('', 3);
+						data += `  ${item.quantity} x S/${item.price.toFixed(2)}\n`;
+					}
+				});
+
+				// ---------------------------
+				//      RESUMEN
+				// ---------------------------
+				data += '----------------------------------------------\n';
+				data += `CANTIDAD DE ITEMS: ${receipt.items.reduce((sum, item) => sum + item.quantity, 0)}\n`;
+				data += '\n';
+				data += ESC + '!' + '\x10'; // Texto grande
+				data += `TOTAL: S/${receipt.total.toFixed(2)}\n`;
+				data += ESC + '!' + '\x00';
+				data += '----------------------------------------------\n';
+
+				// ---------------------------
+				//      MENSAJE FINAL
+				// ---------------------------
+				data += '\n';
+				data += ESC + 'a' + '\x01'; // Centrar
+				data += 'GRACIAS POR SU VISITA!\n';
+				data += '\n';
+				data += ESC + 'a' + '\x00'; // Volver a izquierda
+
+				// ---------------------------
+				//      ESPACIO Y CORTE
+				// ---------------------------
+				data += '\n\n\n\n\n\n'; // Más espacio antes del corte
 				data += GS + 'V' + '\x00'; // Cortar papel
 
 				client.write(Buffer.from(data, 'binary'));

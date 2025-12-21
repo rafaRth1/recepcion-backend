@@ -28,7 +28,7 @@ const __dirname = path.dirname(__filename);
 
 const server = http.createServer(app);
 
-const allowedOrigins = ['http://localhost:5173', 'http://192.168.18.14:5173', 'http://192.168.18.14:3600'];
+const allowedOrigins = ['http://localhost:5173', 'http://192.168.18.41:5173', 'http://192.168.18.41:3600'];
 // const allowedOrigins = ['https://recepcion-app.netlify.app', 'http://localhost:5173', 'https://sz359dd5-5173.brs.devtunnels.ms'];
 
 connectDB();
