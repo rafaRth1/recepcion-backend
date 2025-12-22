@@ -3,7 +3,7 @@ import { Request, Response, NextFunction } from 'express';
 import Ticket from '../models/Ticket';
 import { EditTicketBody, EditTicketParams, TicketDocument, TicketResponse } from '../interfaces/ticket';
 import { DeliveryStatus, TicketStatus } from 'interfaces/shared/interfaces';
-import { CreateTicketRequest } from 'schemas/ticket';
+import { CreateTicketRequest, UpdateTicketRequest } from 'schemas/ticket';
 
 interface AppError extends Error {
 	statusCode?: number;
@@ -23,6 +23,26 @@ const getTickets = async (req: Request, res: Response, next: NextFunction): Prom
 	try {
 		const tickets = await Ticket.find({ status: TicketStatus.PROCESS }).select('-__v');
 		res.success(tickets, 200);
+	} catch (error) {
+		next(error);
+	}
+};
+
+const getTicketById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+	try {
+		const { id } = req.params;
+
+		if (!validateObjectId(id)) {
+			return next(createError('ID de ticket inválido', 400));
+		}
+
+		const ticket: TicketDocument | null = await Ticket.findById(id).select('-__v');
+
+		if (!ticket) {
+			return next(createError('Ticket no encontrado', 404));
+		}
+
+		res.success({ ticket }, 200);
 	} catch (error) {
 		next(error);
 	}
@@ -81,20 +101,16 @@ const addTicket = async (req: Request<{}, {}, CreateTicketRequest>, res: Respons
 	}
 };
 
-const editTicket = async (
-	req: Request<EditTicketParams, TicketResponse, EditTicketBody>,
-	res: Response<TicketResponse>,
-	next: NextFunction
-): Promise<void> => {
+const editTicket = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
 	try {
 		const { id } = req.params;
+		const body = req.body as UpdateTicketRequest;
 
 		if (!validateObjectId(id)) {
 			return next(createError('ID de ticket inválido', 400));
 		}
 
-		// Verificar que el body no esté vacío
-		if (Object.keys(req.body).length === 0) {
+		if (Object.keys(body).length === 0) {
 			return next(createError('No se proporcionaron datos para actualizar', 400));
 		}
 
@@ -104,20 +120,44 @@ const editTicket = async (
 			return next(createError('Ticket no encontrado', 404));
 		}
 
-		// Actualizar solo los campos proporcionados
-		if (req.body.status !== undefined) ticket.status = req.body.status;
-		if (req.body.deliveryStatus !== undefined) ticket.deliveryStatus = req.body.deliveryStatus;
-		if (req.body.color !== undefined) ticket.color = req.body.color;
+		// Actualizar campos proporcionados
+		if (body.nameTicket !== undefined) ticket.nameTicket = body.nameTicket;
+		if (body.type !== undefined) ticket.type = body.type;
+		if (body.dishes !== undefined) {
+			ticket.dishes = body.dishes.map((dish) => ({
+				dishFood: dish.dishFood,
+				price: dish.price,
+				rice: dish.rice ?? false,
+				salad: dish.salad ?? false,
+			}));
+		}
+		if (body.drinks !== undefined) {
+			ticket.drinks = body.drinks.map((drink) => ({
+				name: drink.name,
+				price: drink.price,
+			}));
+		}
+		if (body.creams !== undefined) ticket.creams = body.creams;
+		if (body.exception !== undefined) ticket.exception = body.exception;
+		if (body.paymentType !== undefined) ticket.paymentType = body.paymentType;
+		if (body.color !== undefined) ticket.color = body.color;
+		if (body.status !== undefined) ticket.status = body.status;
+		if (body.deliveryStatus !== undefined) ticket.deliveryStatus = body.deliveryStatus;
+
+		// Recalcular totalPrice si se actualizaron dishes o drinks
+		if (body.dishes !== undefined || body.drinks !== undefined) {
+			const dishesTotal = ticket.dishes.reduce((sum, dish) => sum + dish.price, 0);
+			const drinksTotal = ticket.drinks?.reduce((sum, drink) => sum + drink.price, 0) || 0;
+			ticket.totalPrice = dishesTotal + drinksTotal;
+		}
 
 		await ticket.save();
 		res.success({ ticket }, 200);
 	} catch (error) {
-		// Manejo de errores de validación de Mongoose
 		if (error instanceof mongoose.Error.ValidationError) {
 			const messages = Object.values(error.errors).map((err) => err.message);
 			return next(createError(messages.join(', '), 400));
 		}
-
 		next(error);
 	}
 };
@@ -142,4 +182,4 @@ const deleteTicket = async (req: Request, res: Response, next: NextFunction): Pr
 	}
 };
 
-export { addTicket, getTickets, getTicketsUser, editTicket, deleteTicket, getTicketsDelivery };
+export { addTicket, getTickets, getTicketsUser, editTicket, deleteTicket, getTicketsDelivery, getTicketById };

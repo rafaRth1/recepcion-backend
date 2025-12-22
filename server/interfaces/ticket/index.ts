@@ -1,5 +1,6 @@
 import { DeliveryStatus, PaymentType, TicketStatus, TicketType } from 'interfaces/shared/interfaces';
 import { Document, Types } from 'mongoose';
+import { UpdateTicketRequest } from 'schemas/ticket';
 
 export interface Ticket {
 	nameTicket: string;
@@ -18,7 +19,6 @@ export interface Ticket {
 }
 
 interface Dish {
-	key: string;
 	dishFood: string;
 	price: number;
 	rice: boolean;
@@ -30,19 +30,12 @@ interface Cream {
 }
 
 interface Drink {
-	key: string;
 	name: string;
 	price: number;
 }
 
 export interface EditTicketParams {
 	id: string;
-}
-
-export interface EditTicketBody {
-	status?: TicketStatus;
-	deliveryStatus?: DeliveryStatus;
-	color?: string;
 }
 
 export interface TicketResponse {
@@ -52,4 +45,16 @@ export interface TicketResponse {
 export interface TicketDocument extends Ticket, Document {
 	createdAt: Date;
 	updatedAt: Date;
+}
+
+export interface EditTicketParams {
+	id: string;
+}
+
+export type EditTicketBody = UpdateTicketRequest;
+
+export interface TicketResponse {
+	ticket?: TicketDocument;
+	tickets?: TicketDocument[];
+	message?: string;
 }

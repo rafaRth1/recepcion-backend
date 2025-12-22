@@ -11,7 +11,6 @@ const TicketSchema = new Schema<TicketDocument>(
 		},
 		dishes: [
 			{
-				key: String,
 				dishFood: String,
 				price: Number,
 				rice: Boolean,
@@ -21,7 +20,6 @@ const TicketSchema = new Schema<TicketDocument>(
 		creams: [{ creams: [String] }],
 		drinks: [
 			{
-				key: String,
 				name: String,
 				price: Number,
 			},

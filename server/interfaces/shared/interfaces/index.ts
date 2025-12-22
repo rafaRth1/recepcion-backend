@@ -11,6 +11,7 @@ export enum Status {
 export enum TicketStatus {
 	COMPLETED = 'COMPLETED',
 	PROCESS = 'PROCESS',
+	CANCELLED = 'CANCELLED',
 }
 
 export enum TicketType {
@@ -22,6 +23,7 @@ export enum TicketType {
 export enum DeliveryStatus {
 	COMPLETED = 'COMPLETED',
 	PROCESS = 'PROCESS',
+	CANCELLED = 'CANCELLED',
 }
 
 export enum PaymentType {
