@@ -203,6 +203,17 @@ export class PrinterService {
 				});
 
 				// ---------------------------
+				//      CREMAS (SOLO DELIVERY Y PICKUP)
+				// ---------------------------
+				if (receipt.creams && receipt.creams.length > 0 && (receipt.type === 'DELIVERY' || receipt.type === 'PICKUP')) {
+					data += '----------------------------------------------\n';
+					data += ESC + '!' + '\x10'; // Texto grande
+					data += 'CREMAS:\n';
+					data += ESC + '!' + '\x00';
+					data += `${receipt.creams.join(', ')}\n`;
+				}
+
+				// ---------------------------
 				//      RESUMEN
 				// ---------------------------
 				data += '----------------------------------------------\n';
@@ -225,7 +236,7 @@ export class PrinterService {
 				// ---------------------------
 				//      ESPACIO Y CORTE
 				// ---------------------------
-				data += '\n\n\n\n\n\n'; // Más espacio antes del corte
+				data += '\n\n\n\n\n\n';
 				data += GS + 'V' + '\x00'; // Cortar papel
 
 				client.write(Buffer.from(data, 'binary'));

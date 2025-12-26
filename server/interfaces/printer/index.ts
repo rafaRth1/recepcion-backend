@@ -10,6 +10,13 @@ export interface CustomerReceipt {
 	customerName?: string;
 	table: string;
 	employee: string;
-	items: CustomerReceiptItem[];
+	type: 'TABLE' | 'DELIVERY' | 'PICKUP';
+	items: Array<{
+		description: string;
+		quantity: number;
+		price: number;
+		total: number;
+	}>;
+	creams?: string[]; // Array de todas las cremas
 	total: number;
 }
