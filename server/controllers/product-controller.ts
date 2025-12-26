@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import { Request, Response, NextFunction } from 'express';
 import Product from '../models/Product';
 import { PaginationResult, ProductFilter, ProductQuery } from '../interfaces/product';
-import { Status } from '../interfaces/shared/interfaces';
+import { CategoryProduct, Status } from '../interfaces/shared/interfaces';
 import { CreateProductRequest, UpdateProductRequest } from 'schemas/product';
 
 interface AppError extends Error {
@@ -26,8 +26,15 @@ const getProducts = async (req: Request<{}, {}, {}, ProductQuery>, res: Response
 		// Construir filtros
 		const filter: ProductFilter = {};
 
+		// Validar y agregar categoría
 		if (category) {
-			filter.category = category;
+			// Verificar que sea una categoría válida
+			const validCategories = Object.values(CategoryProduct);
+			if (validCategories.includes(category as CategoryProduct)) {
+				filter.category = category;
+			} else {
+				return next(createError(`Categoría inválida: ${category}`, 400));
+			}
 		}
 
 		if (typeof status === 'string') {
