@@ -10,6 +10,8 @@ export const printTicketController = async (req: Request, res: Response) => {
 	try {
 		const ticket = req.body;
 
+		console.log('Ticket to print:', ticket);
+
 		await printerService.printTicket(ticket);
 
 		res.json({

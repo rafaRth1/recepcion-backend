@@ -257,10 +257,14 @@ export class PrinterService {
 
 	private getTipoPedido(type: string): string {
 		const tipos: Record<string, string> = {
-			table: 'MESA',
-			delivery: 'DELIVERY',
-			pickup: 'PARA LLEVAR',
+			TABLE: 'MESA',
+			DELIVERY: 'DELIVERY',
+			PICKUP: 'PARA LLEVAR',
 		};
+
+		console.log('1. type:', type);
+
+		console.log('type:', tipos[type]);
 		return tipos[type] || type.toUpperCase();
 	}
 
