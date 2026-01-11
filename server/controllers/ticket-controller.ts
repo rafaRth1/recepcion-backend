@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import { Request, Response, NextFunction } from 'express';
 import Ticket from '../models/Ticket';
-import { EditTicketBody, EditTicketParams, TicketDocument, TicketResponse } from '../interfaces/ticket';
+import { CompleteTicketParams, CompleteTicketResponse, TicketDocument } from '../interfaces/ticket';
 import { DeliveryStatus, TicketStatus } from 'interfaces/shared/interfaces';
 import { CreateTicketRequest, UpdateTicketRequest } from 'schemas/ticket';
 
@@ -48,30 +48,6 @@ const getTicketById = async (req: Request, res: Response, next: NextFunction): P
 	}
 };
 
-const getTicketsUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-	try {
-		const { id } = req.params;
-
-		if (!validateObjectId(id)) {
-			return next(createError('ID de usuario inválido', 400));
-		}
-
-		const tickets = await Ticket.find({ user: id }).select('-createdAt -updatedAt -__v');
-		res.success({ tickets }, 200);
-	} catch (error) {
-		next(error);
-	}
-};
-
-const getTicketsDelivery = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-	try {
-		const tickets = await Ticket.find({ status_delivery: 'process', type: 'delivery' }).select('-createdAt -updatedAt -__v');
-		res.success({ tickets }, 200);
-	} catch (error) {
-		next(error);
-	}
-};
-
 const addTicket = async (req: Request<{}, {}, CreateTicketRequest>, res: Response, next: NextFunction): Promise<void> => {
 	try {
 		const ticketData = req.body;
@@ -86,7 +62,7 @@ const addTicket = async (req: Request<{}, {}, CreateTicketRequest>, res: Respons
 			drinks: ticketData.drinks || [],
 			creams: ticketData.creams || [],
 			exception: ticketData.exception,
-			paymentType: ticketData.paymentType,
+			// paymentType: ticketData.paymentType,
 			color: ticketData.color,
 			type: ticketData.type,
 			status: TicketStatus.PROCESS,
@@ -182,4 +158,43 @@ const deleteTicket = async (req: Request, res: Response, next: NextFunction): Pr
 	}
 };
 
-export { addTicket, getTickets, getTicketsUser, editTicket, deleteTicket, getTicketsDelivery, getTicketById };
+export const completeTicket = async (
+	req: Request<CompleteTicketParams, CompleteTicketResponse, {}, {}>,
+	res: Response,
+	next: NextFunction
+) => {
+	try {
+		const { id } = req.params;
+
+		if (!validateObjectId(id)) {
+			return next(createError('ID de ticket inválido', 400));
+		}
+
+		const ticket: TicketDocument | null = await Ticket.findById(id);
+
+		if (!ticket) {
+			return next(createError('Ticket no encontrado', 404));
+		}
+
+		// Evitar transiciones inválidas
+		if (ticket.status === TicketStatus.CANCELLED) {
+			return next(createError('No puedes finalizar un ticket cancelado', 409));
+		}
+
+		// Idempotencia: si ya está completado, respondes OK con el mismo ticket
+		if (ticket.status === TicketStatus.COMPLETED) {
+			return res.success(ticket, 200);
+		}
+
+		// Marcar completado
+		ticket.status = TicketStatus.COMPLETED;
+
+		await ticket.save();
+
+		res.success(ticket, 200);
+	} catch (error) {
+		next(error);
+	}
+};
+
+export { addTicket, getTickets, editTicket, deleteTicket, getTicketById };

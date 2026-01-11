@@ -1,13 +1,5 @@
 import express from 'express';
-import {
-	addTicket,
-	deleteTicket,
-	editTicket,
-	getTicketById,
-	getTickets,
-	getTicketsDelivery,
-	getTicketsUser,
-} from '../controllers/ticket-controller';
+import { addTicket, completeTicket, deleteTicket, editTicket, getTicketById, getTickets } from '../controllers/ticket-controller';
 import { validate } from 'middleware/validate';
 import { createTicketSchema, updateTicketSchema } from 'schemas/ticket';
 import checkAuth from 'middleware/check-auth';
@@ -18,7 +10,7 @@ const router = express.Router();
 router.get('/', checkAuth, getTickets);
 
 // GET /api/ticket/:id - Obtener UN ticket específico por ID
-router.get('/:id', checkAuth, getTicketById); // ← NUEVA RUTA
+router.get('/:id', checkAuth, getTicketById);
 
 // POST /api/ticket - Crear un nuevo ticket
 router.post('/', checkAuth, validate(createTicketSchema), addTicket);
@@ -29,10 +21,7 @@ router.put('/:id', checkAuth, validate(updateTicketSchema), editTicket);
 // DELETE /api/ticket/:id - Eliminar ticket de una tienda
 router.delete('/:id', checkAuth, deleteTicket);
 
-// GET /api/ticket/store/:id - Obtener tickets de una tienda específica
-router.get('/store/:id', getTicketsUser);
-
-// GET /api/ticket/delivery - Obtener tickets de delivery
-router.get('/delivery', getTicketsDelivery);
+// PATCH /api/ticket/:id/complete - Completar ticket
+router.patch('/:id/complete', checkAuth, completeTicket);
 
 export default router;

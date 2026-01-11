@@ -1,6 +1,7 @@
 import { DeliveryStatus, PaymentType, TicketStatus, TicketType } from 'interfaces/shared/interfaces';
 import { Document, Types } from 'mongoose';
 import { UpdateTicketRequest } from 'schemas/ticket';
+import * as core from 'express-serve-static-core';
 
 export interface Ticket {
 	nameTicket: string;
@@ -57,4 +58,12 @@ export interface TicketResponse {
 	ticket?: TicketDocument;
 	tickets?: TicketDocument[];
 	message?: string;
+}
+
+export interface CompleteTicketParams extends core.ParamsDictionary {
+	id: string;
+}
+
+export interface CompleteTicketResponse {
+	ticket: TicketDocument;
 }
