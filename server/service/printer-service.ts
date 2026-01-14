@@ -57,11 +57,19 @@ export class PrinterService {
 				data += '------------------------------------------\n';
 
 				ticket.dishes.forEach((dish) => {
-					const name = dish.dishFood.slice(0, 20);
-					data += this.pad(name, 20);
+					const nameLines = this.wrapText(dish.dishFood, 20);
+
+					// Primera línea (con columnas)
+					data += this.pad(nameLines[0], 20);
 					data += this.pad(dish.rice ? 'Si' : 'No', 5);
 					data += this.pad(dish.salad ? 'Si' : 'No', 5);
 					data += `S/${dish.price.toFixed(2)}\n`;
+
+					// Líneas adicionales del nombre
+					for (let i = 1; i < nameLines.length; i++) {
+						data += this.pad(nameLines[i], 20);
+						data += '\n';
+					}
 				});
 
 				// ---------------------------
@@ -262,10 +270,25 @@ export class PrinterService {
 			PICKUP: 'PARA LLEVAR',
 		};
 
-		console.log('1. type:', type);
-
-		console.log('type:', tipos[type]);
 		return tipos[type] || type.toUpperCase();
+	}
+
+	private wrapText(text: string, maxLength: number): string[] {
+		const words = text.split(' ');
+		const lines: string[] = [];
+		let currentLine = '';
+
+		for (const word of words) {
+			if ((currentLine + word).length <= maxLength) {
+				currentLine += (currentLine ? ' ' : '') + word;
+			} else {
+				lines.push(currentLine);
+				currentLine = word;
+			}
+		}
+
+		if (currentLine) lines.push(currentLine);
+		return lines;
 	}
 
 	private pad(text: string, length: number): string {
