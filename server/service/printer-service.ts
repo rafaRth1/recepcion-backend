@@ -3,7 +3,10 @@ import { Ticket } from './../interfaces/ticket/index';
 import net from 'net';
 
 export class PrinterService {
-	constructor(private printerIp: string, private printerPort: number = 9100) {}
+	constructor(
+		private printerIp: string,
+		private printerPort: number = 9100,
+	) {}
 
 	async printTicket(ticket: Ticket): Promise<void> {
 		return new Promise((resolve, reject) => {
@@ -22,10 +25,6 @@ export class PrinterService {
 				// ---------------------------
 				//      ENCABEZADO
 				// ---------------------------
-				// data += ESC + 'a' + '\x01'; // Centrar
-				// data += ESC + '!' + '\x10'; // Texto grande
-				// data += 'COCINA\n';
-				// data += ESC + '!' + '\x00'; // Texto normal
 
 				// Tipo de pedido
 				const tipoPedido = this.getTipoPedido(ticket.type);
@@ -45,6 +44,17 @@ export class PrinterService {
 				data += `Pago: ${ticket.paymentType || '----'}\n`;
 
 				data += '==========================================\n';
+
+				// ---------------------------
+				//      EXCEPCIÓN
+				// ---------------------------
+				if (ticket.exception && ticket.exception.trim() !== '') {
+					data += '\n';
+					data += ESC + '!' + '\x10';
+					data += '*** NOTA ***\n';
+					data += ESC + '!' + '\x00';
+					data += `${ticket.exception}\n`;
+				}
 
 				// ---------------------------
 				//      PLATOS
@@ -102,17 +112,6 @@ export class PrinterService {
 						const cremasList = cream.creams.join(', ');
 						data += `${cremasList}\n`;
 					});
-				}
-
-				// ---------------------------
-				//      EXCEPCIÓN
-				// ---------------------------
-				if (ticket.exception && ticket.exception.trim() !== '') {
-					data += '\n';
-					data += ESC + '!' + '\x10';
-					data += '*** NOTA ***\n';
-					data += ESC + '!' + '\x00';
-					data += `${ticket.exception}\n`;
 				}
 
 				// ---------------------------
